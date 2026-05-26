@@ -61,6 +61,14 @@ resource "aws_security_group" "ec2" {
     }
   }
 
+  ingress {
+    description = "Allow internal traffic between CDC EC2 instances."
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    self        = true
+  }
+
   egress {
     description = "Allow outbound traffic."
     from_port   = 0
