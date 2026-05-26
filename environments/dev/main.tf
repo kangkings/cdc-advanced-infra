@@ -19,6 +19,7 @@ resource "aws_internet_gateway" "main" {
 resource "aws_subnet" "public" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = var.public_subnet_cidr
+  availability_zone       = var.availability_zone
   map_public_ip_on_launch = true
 
   tags = merge(local.common_tags, {
@@ -82,4 +83,41 @@ resource "aws_security_group" "ec2" {
   })
 }
 
-# EC2 resources will be added here after deciding the AMI input.
+data "aws_ami" "ubuntu" {
+  most_recent = true
+  owners      = ["099720109477"]
+
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+}
+
+resource "aws_instance" "cdc" {
+  for_each = var.ec2_instances
+
+  ami                         = data.aws_ami.ubuntu.id
+  instance_type               = local.selected_instance_types[each.key]
+  subnet_id                   = aws_subnet.public.id
+  vpc_security_group_ids      = [aws_security_group.ec2.id]
+  key_name                    = var.key_pair_name
+  associate_public_ip_address = true
+  monitoring                  = false
+
+  root_block_device {
+    volume_type           = "gp3"
+    volume_size           = var.root_volume_size
+    encrypted             = true
+    delete_on_termination = true
+  }
+
+  tags = merge(local.common_tags, {
+    Name = "${var.project_name}-${var.environment}-${each.key}"
+    Role = each.key
+  })
+}

@@ -5,7 +5,10 @@ locals {
     medium = "t3a.medium"
   }
 
-  selected_instance_type = local.instance_types[var.instance_size]
+  selected_instance_types = {
+    for role, config in var.ec2_instances :
+    role => local.instance_types[config.instance_size]
+  }
 
   common_tags = {
     Project     = var.project_name

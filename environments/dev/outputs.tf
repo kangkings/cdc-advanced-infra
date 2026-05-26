@@ -1,6 +1,6 @@
-output "selected_instance_type" {
-  description = "EC2 instance type resolved from the selected friendly size."
-  value       = local.selected_instance_type
+output "selected_instance_types" {
+  description = "EC2 instance types resolved for each CDC role."
+  value       = local.selected_instance_types
 }
 
 output "vpc_id" {
@@ -23,7 +23,33 @@ output "public_subnet_id" {
   value       = aws_subnet.public.id
 }
 
+output "public_subnet_availability_zone" {
+  description = "Availability zone used by the public subnet and attached EC2 instance."
+  value       = aws_subnet.public.availability_zone
+}
+
 output "ec2_security_group_id" {
   description = "ID of the security group intended for CDC EC2 instances."
   value       = aws_security_group.ec2.id
+}
+
+output "ubuntu_ami_id" {
+  description = "Latest Canonical Ubuntu 24.04 LTS amd64 AMI selected for EC2."
+  value       = data.aws_ami.ubuntu.id
+}
+
+output "ec2_instance_ids" {
+  description = "IDs of the CDC EC2 instances by role."
+  value = {
+    for role, instance in aws_instance.cdc :
+    role => instance.id
+  }
+}
+
+output "ec2_public_ips" {
+  description = "Public IPv4 addresses of the CDC EC2 instances by role."
+  value = {
+    for role, instance in aws_instance.cdc :
+    role => instance.public_ip
+  }
 }
