@@ -25,3 +25,6 @@ terraform.rc
 
 # Local Codex working agreements
 /AGENTS.md
+
+# Generated Terraform visualization
+/environments/dev/network-graph.svg
